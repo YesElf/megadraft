@@ -25,7 +25,7 @@ export default class LinkInput extends Component {
     if (!link.startsWith("http://") && !link.startsWith("https://")) {
       link = `http://${link}`;
     }
-    const entityKey = Entity.create("LINK", "MUTABLE", {url: link});
+    const entityKey = Entity.create("LINK", "MUTABLE", {url: link, target: "_blank"});
     let newState = RichUtils.toggleLink(
       editorState,
       editorState.getSelection(),
