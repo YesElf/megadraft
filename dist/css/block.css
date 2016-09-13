@@ -82,6 +82,7 @@
   bottom: 0;
 }
 
+<<<<<<< HEAD
 .block__notfound__icon {
   color: #999;
   vertical-align: middle;
@@ -90,6 +91,8 @@
   margin: 104px;
 }
 
+=======
+>>>>>>> hack: additional 'deploy' dir
 .block__data {
   padding: 16px;
   padding-top: 8px;
