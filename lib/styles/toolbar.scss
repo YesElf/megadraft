@@ -16,6 +16,7 @@
         display: block;
     }
 
+<<<<<<< HEAD
     &__error-msg {
         margin: 0;
         height: 0;
@@ -43,13 +44,18 @@
       }
     }
 
+=======
+>>>>>>> hack: referencable from npm?
     &__wrapper {
         background-color: #181818;
         border-radius: 4px;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
         left: -50%;
         position: relative;
+<<<<<<< HEAD
         transition: background-color 0.2s ease-in-out;
+=======
+>>>>>>> hack: referencable from npm?
     }
 
     &__list {
@@ -70,7 +76,19 @@
         border-style: solid;
         border-color: #181818 transparent transparent;
         margin-left: -8px;
+<<<<<<< HEAD
         transition: border-color 0.2s ease-in-out;
+=======
+    }
+
+    &--editing-link {
+        .toolbar__list {
+            display: none;
+        }
+        .toolbar__input {
+            display: block;
+        }
+>>>>>>> hack: referencable from npm?
     }
 
     &__item {
@@ -110,9 +128,16 @@
         background-color: transparent;
         border: none;
         color: #fafafa;
+<<<<<<< HEAD
         font-size: 0.875rem;
         height: auto;
         line-height: 1.2rem;
+=======
+        display: none;
+        font-size: 0.875rem;
+        height: auto;
+        line-height: 0.875rem;
+>>>>>>> hack: referencable from npm?
         margin: 0;
         padding: 20px;
         width: 250px;
@@ -121,8 +146,11 @@
             outline: none;
         }
     }
+<<<<<<< HEAD
 
     &__input-button {
         padding-right: 16px;
     }
+=======
+>>>>>>> hack: referencable from npm?
 }
