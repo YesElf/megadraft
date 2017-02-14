@@ -91,5 +91,8 @@
   "bugs": {
     "url": "https://github.com/globocom/megadraft/issues"
   },
-  "homepage": "https://github.com/globocom/megadraft#readme"
+  "homepage": "https://github.com/globocom/megadraft#readme",
+  "directories": {
+    "lib": "./lib"
+  }
 }
