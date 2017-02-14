@@ -6,11 +6,13 @@
 .sidebar {
   position: relative;
 }
+
 .sidebar__menu {
   float: left;
   left: -57px;
   position: absolute;
 }
+
 .sidebar__sidemenu-wrapper {
   padding: 0;
   list-style: none;
@@ -22,6 +24,7 @@
   width: 36px;
   text-align: center;
 }
+
 .sidemenu__button {
   border: 0;
   color: #fff;
@@ -30,10 +33,12 @@
   font-size: 0;
   padding: 0;
   width: 32px;
+  -webkit-transition: all 0.5s ease;
   transition: all 0.5s ease;
   position: relative;
   background: none;
 }
+
 .sidemenu__button:before {
   content: "";
   width: 100%;
@@ -42,42 +47,55 @@
   display: inline-block;
   background-color: #181818;
 }
+
 .sidemenu__button:before:hover {
   background-color: #333333;
 }
+
 .sidemenu__button--open {
-  transform: rotate(45deg);
+  -webkit-transform: rotate(45deg);
+          transform: rotate(45deg);
 }
+
 .sidemenu__button--open:before {
   background-color: #0669de;
 }
+
 .sidemenu__button__icon {
   position: absolute;
   top: 50%;
   left: 50%;
   margin: -12px 0 0 -12px;
 }
+
 .sidemenu__items {
   list-style: none;
   padding: 0;
   margin-top: 8px;
   padding-top: 2px;
+  -webkit-transition: max-height 0.5s ease;
   transition: max-height 0.5s ease;
   overflow: hidden;
   max-height: 0;
   width: 36px;
   text-align: center;
 }
+
 .sidemenu__items .sidemenu__button {
   background: none;
 }
+
 .sidemenu__items .sidemenu__button:before {
+  -webkit-transition: all 0.1s ease-in-out;
   transition: all 0.1s ease-in-out;
   background-color: #181818;
 }
+
 .sidemenu__items .sidemenu__button:hover:before {
-  transform: scale(1.125);
+  -webkit-transform: scale(1.125);
+          transform: scale(1.125);
 }
+
 .sidemenu__item {
   height: 40px;
 }

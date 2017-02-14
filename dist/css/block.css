@@ -7,13 +7,17 @@
   padding: 8px;
   margin: -8px;
 }
+
 .block__hover:hover {
   background-color: #eee;
   border-radius: 4px;
 }
 
 .block__wrapper {
-  user-select: none;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+      -ms-user-select: none;
+          user-select: none;
   background-color: #fff;
   border-radius: 3px;
   border: solid 1px #ddd;
@@ -41,9 +45,11 @@
   text-align: center;
   font-size: 0;
 }
+
 .block__action:hover {
   color: #000;
 }
+
 .block__action__icon {
   vertical-align: middle;
 }
@@ -54,9 +60,11 @@
   text-align: center;
   position: relative;
 }
+
 .block__content--with-padding {
   padding: 16px;
 }
+
 .block__content:before, .block__content:after {
   position: absolute;
   width: 100%;
@@ -65,9 +73,11 @@
   content: "";
   left: 0;
 }
+
 .block__content:before {
   top: 0;
 }
+
 .block__content:after {
   bottom: 0;
 }
@@ -95,19 +105,24 @@
   width: 100%;
   font-size: 0.75rem;
 }
+
 .block__input--small-padding {
   padding: 8px 0 5px 0;
 }
+
 .block__input--big-text {
   font-size: 1rem;
   font-weight: bold;
 }
+
 .block__input__row {
   line-height: 1rem;
 }
+
 .block__input__wrapper {
   position: relative;
 }
+
 .block__input__icon {
   position: absolute;
   top: 50%;
@@ -118,40 +133,51 @@
   display: none;
   pointer-events: none;
 }
+
 .block__input:hover {
   border-color: #999;
 }
+
 .block__input:hover + svg.block__input__icon {
   display: inline-block;
 }
+
 .block__input:focus {
   border-color: #0072de;
   border-style: solid;
 }
+
 .block__input:focus + svg.block__input__icon {
   display: inline-block;
 }
+
 .block__input:placeholder {
   color: #999;
 }
+
 .block__input--empty {
   border-color: #ccc;
 }
+
 .block__input--empty :hover {
   border-color: #999;
 }
+
 .block__input--empty + svg.block__input__icon {
   color: #999;
   display: inline-block;
 }
+
 .block__input--error, .block__input--error.block__input--empty, .block__input--error:hover {
   border-color: #ff351e;
   border-style: solid;
 }
+
 .block__input--error + svg.block__input__icon {
   color: #ff351e;
   display: inline-block;
 }
+
 .block__input__error-text {
   color: #ff351e;
   margin-top: 6px;
