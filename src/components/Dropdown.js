@@ -39,7 +39,7 @@ export default class Dropdown extends Component {
 
   isEmpty() {
     const items = this.props.items || [];
-    return (items.count() == 0) ? true : false;
+    return (items.length == 0) ? true : false;
   }
 
   onChange(selected) {
