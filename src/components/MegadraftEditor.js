@@ -110,7 +110,7 @@ export default class MegadraftEditor extends Component {
 
   handleKeyCommand(command) {
     // external key bindings
-    if (this.keyBindings.count()) {
+    if (this.keyBindings.length) {
       const extKb = this.keyBindings.find(kb => kb.name === command);
       if (extKb) {
         extKb.action();
