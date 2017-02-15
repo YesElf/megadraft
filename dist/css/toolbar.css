@@ -15,7 +15,6 @@
   display: block;
 }
 
-<<<<<<< HEAD
 .toolbar__error-msg {
   margin: 0;
   height: 0;
@@ -45,19 +44,14 @@
   color: #FFF;
 }
 
-=======
->>>>>>> hack: additional 'deploy' dir
 .toolbar__wrapper {
   background-color: #181818;
   border-radius: 4px;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.4);
   left: -50%;
   position: relative;
-<<<<<<< HEAD
   -webkit-transition: background-color 0.2s ease-in-out;
   transition: background-color 0.2s ease-in-out;
-=======
->>>>>>> hack: additional 'deploy' dir
 }
 
 .toolbar__list {
@@ -78,19 +72,8 @@
   border-style: solid;
   border-color: #181818 transparent transparent;
   margin-left: -8px;
-<<<<<<< HEAD
   -webkit-transition: border-color 0.2s ease-in-out;
   transition: border-color 0.2s ease-in-out;
-=======
-}
-
-.toolbar--editing-link .toolbar__list {
-  display: none;
-}
-
-.toolbar--editing-link .toolbar__input {
-  display: block;
->>>>>>> hack: additional 'deploy' dir
 }
 
 .toolbar__item {
@@ -130,16 +113,9 @@
   background-color: transparent;
   border: none;
   color: #fafafa;
-<<<<<<< HEAD
   font-size: 0.875rem;
   height: auto;
   line-height: 1.2rem;
-=======
-  display: none;
-  font-size: 0.875rem;
-  height: auto;
-  line-height: 0.875rem;
->>>>>>> hack: additional 'deploy' dir
   margin: 0;
   padding: 20px;
   width: 250px;
@@ -148,10 +124,7 @@
 .toolbar__input:focus {
   outline: none;
 }
-<<<<<<< HEAD
 
 .toolbar__input-button {
   padding-right: 16px;
 }
-=======
->>>>>>> hack: additional 'deploy' dir

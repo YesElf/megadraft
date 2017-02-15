@@ -4,11 +4,7 @@
  * License: MIT
  */
 /* Sorry, not using BEM here, we are using drafjs structure */
-<<<<<<< HEAD
 .DraftEditor-root, .toolbar {
-=======
-.DraftEditor-root {
->>>>>>> hack: additional 'deploy' dir
   font-family: Open Sans, sans-serif;
   color: #181818;
   font-size: 1.125rem;

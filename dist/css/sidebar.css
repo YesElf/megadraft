@@ -81,13 +81,6 @@
   text-align: center;
 }
 
-<<<<<<< HEAD
-=======
-.sidemenu__items--open {
-  max-height: 116px;
-}
-
->>>>>>> hack: additional 'deploy' dir
 .sidemenu__items .sidemenu__button {
   background: none;
 }
