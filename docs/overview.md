@@ -1,9 +1,9 @@
-# Overview
+# Overview & usage
 
 Megadraft is a Rich Text Editor built on top of Facebook's
 [draft.js](https://facebook.github.io/draft-js/) framework
 
-# Installation
+## Installation
 
 Megadraft can be installed via npm:
 
@@ -13,8 +13,8 @@ npm install --save megadraft
 
 ## Usage
 
-To use it in your application you'll just need to import the Megadraft
-component and use it in your application.
+To use it in your application all you need to do is import the Megadraft
+component such as the following:
 
 ```js
 import React from "react";
@@ -47,17 +47,9 @@ ReactDOM.render(
 );
 ```
 
-Then link the main css (dist/css/megadraft.css) on your page, you can use the Sass
-source on your build, if you wish.
+Then link the main css (`dist/css/megadraft.css`) on your page, you can use the
+Sass source on your build, if you wish.
 
 ```html
 <link href="node_modules/megadraft/dist/css/megadraft.css" rel="stylesheet">
 ```
-
-
-## Editor props
-
-- `placeholder` Editor's placeholder text
-- `plugins` List of plugins to be used by the editor
-- `editorState` DraftJS editor state
-- `onChange` Function fired on editor state changes

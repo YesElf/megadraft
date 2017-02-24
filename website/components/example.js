@@ -6,8 +6,6 @@
 
 import React from "react";
 
-import {Tabs, Tab} from "material-ui/Tabs";
-import FontIcon from "material-ui/FontIcon";
 import getMuiTheme from "material-ui/styles/getMuiTheme";
 import {grey300, grey900, white, indigo500} from "material-ui/styles/colors";
 
@@ -16,6 +14,10 @@ import {editorStateToJSON, editorStateFromRaw} from "../../src/utils";
 import {highlightCode} from "./highlightCode";
 
 import INITIAL_CONTENT from "./contentExample";
+
+import relatedArticles from "megadraft-related-articles-plugin";
+import image from "../../src/plugins/image/plugin";
+import video from "../../src/plugins/video/plugin";
 
 
 const muiTheme = getMuiTheme({
@@ -35,15 +37,18 @@ class Example extends React.Component {
   constructor(props) {
     super(props);
     const content = editorStateFromRaw(INITIAL_CONTENT);
-    this.keyBindings = [
-        { name: "save", isKeyBound: (e) => { return e.keyCode === 83 && e.ctrlKey; }, action: () => { this.onSave(); } }
-    ];
+    this.keyBindings = [{
+      name: "save",
+      isKeyBound: (e) => {return e.keyCode === 83 && e.ctrlKey;},
+      action: () => {this.onSave();}
+    }];
+    this.resetStyleNewLine = true;
     this.state = {
       value: content,
-      activeTab: "a"
     };
     this.onChange = ::this.onChange;
     this.onCodeActive = ::this.onCodeActive;
+    this.maxSidebarButtons = null;
   }
 
   getChildContext() {
@@ -53,12 +58,6 @@ class Example extends React.Component {
   componentDidMount() {
     highlightCode(this);
   }
-
-  handleChange = (tab) => {
-    this.setState({
-      activeTab: tab
-    });
-  };
 
   onChange(value) {
     this.setState({
@@ -74,35 +73,46 @@ class Example extends React.Component {
     highlightCode(this);
   }
 
-  render() {
-    const icon_edit = <FontIcon className="material-icons">mode_edit</FontIcon>;
-    const icon_code = <FontIcon className="material-icons">code</FontIcon>;
-
+  renderEditor() {
     return (
-      <Tabs value={this.state.activeTab} onChange={this.handleChange}>
-        <Tab label="Editor" value="a" icon={icon_edit}>
-          <div className="tab-container-editor">
-            <MegadraftEditor
-              editorState={this.state.value}
-              placeholder="Text"
-              onChange={this.onChange}
-              keyBindings={this.keyBindings}/>
-          </div>
-        </Tab>
-        <Tab label="Content JSON" onActive={this.onCodeActive} value="b" icon={icon_code}>
-          <div className="tab-container-json">
-            <pre className="jsonpreview">
-              <code className="json hljs">
-                {editorStateToJSON(this.state.value)}
-              </code>
-            </pre>
-          </div>
-        </Tab>
-      </Tabs>
+      <div className="tab-container-editor">
+        <MegadraftEditor
+          plugins={[image, video, relatedArticles]}
+          editorState={this.state.value}
+          placeholder="Text"
+          onChange={this.onChange}
+          keyBindings={this.keyBindings}
+          resetStyleNewLine={this.resetStyleNewLine}
+          maxSidebarButtons={this.maxSidebarButtons}/>
+      </div>
     );
+  }
+
+  renderJsonPreview() {
+    return (
+      <div>
+        <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/gruvbox-dark.min.css"/>
+        <div className="tab-container-json">
+          <pre className="jsonpreview">
+            <code className="json hljs">
+              {editorStateToJSON(this.state.value)}
+            </code>
+          </pre>
+        </div>
+      </div>
+    );
+  }
+
+  render() {
+    if (this.props.activeContent) {
+      return this.renderEditor();
+    }
+    return this.renderJsonPreview();
   }
 }
 
+/* global hljs */
+hljs.initHighlightingOnLoad();
 
 Example.childContextTypes = {
   muiTheme: React.PropTypes.object.isRequired

@@ -4,20 +4,38 @@
  * License: MIT
  */
 
-import React, {Component} from "react";
-import {Editor, RichUtils, getDefaultKeyBinding} from "draft-js";
+// i18n shim! I feel bad for doing this =(
+// https://github.com/megawac/async/blob/d2dd36b4558f483682f3c672630fdcb36a96d4d2/lib/async.js#L16
+((typeof self === "object" && self.self === self && self) ||
+  (typeof global === "object" && global.global === global && global) ||
+  this).__ = (x) => x;
 
-import Toolbar from "./Toolbar";
+import React, {Component} from "react";
+import {
+    Editor,
+    RichUtils,
+    getDefaultKeyBinding,
+    EditorState,
+    genKey,
+    ContentBlock
+} from "draft-js";
+import Immutable from "immutable";
+
+
+import DefaultToolbar from "./Toolbar";
 import Sidebar from "./Sidebar";
 import Media from "./Media";
+import notFoundPlugin from "../plugins/not-found/plugin";
 import DEFAULT_PLUGINS from "../plugins/default";
 import DEFAULT_ACTIONS from "../actions/default";
+import DEFAULT_ENTITY_INPUTS from "../entity_inputs/default";
+
+const NO_RESET_STYLE_DEFAULT = ["ordered-list-item", "unordered-list-item"];
 
 
 export default class MegadraftEditor extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       readOnly: this.props.readOnly || false
     };
@@ -35,10 +53,14 @@ export default class MegadraftEditor extends Component {
 
     this.actions = this.props.actions || DEFAULT_ACTIONS;
     this.plugins = this.getValidPlugins();
+    this.entityInputs = this.props.entityInputs || DEFAULT_ENTITY_INPUTS;
+    this.blocksWithoutStyleReset = (this.props.blocksWithoutStyleReset ||
+                                    NO_RESET_STYLE_DEFAULT);
 
     this.pluginsByType = this.getPluginsByType();
 
     this.keyBindings = this.props.keyBindings || [];
+
   }
 
   getValidPlugins() {
@@ -89,7 +111,7 @@ export default class MegadraftEditor extends Component {
   handleKeyCommand(command) {
     // external key bindings
     if (this.keyBindings.length) {
-      var extKb = this.keyBindings.find(kb => kb.name === command);
+      const extKb = this.keyBindings.find(kb => kb.name === command);
       if (extKb) {
         extKb.action();
         return true;
@@ -105,19 +127,117 @@ export default class MegadraftEditor extends Component {
     return false;
   }
 
+  /*
+   * Copyright (c) 2016 Icelab
+   *
+   * License: MIT
+   */
+   //Based on https://github.com/icelab/draft-js-block-breakout-plugin
+  resetBlockStyle(editorState, selection, contentState, currentBlock, blockType) {
+    const {List} = Immutable;
+    const emptyBlockKey = genKey();
+
+    const emptyBlock = new ContentBlock({
+      key: emptyBlockKey,
+      text: "",
+      type: blockType,
+      depth: 0,
+      characterList: List(),
+      inlineStyleRanges: [],
+    });
+    const blockMap = contentState.getBlockMap();
+
+    const blocksBefore = blockMap.toSeq().takeUntil(function (v) {
+      return v === currentBlock;
+    });
+    const blocksAfter = blockMap.toSeq().skipUntil(function (v) {
+      return v === currentBlock;
+    }).rest();
+
+    const augmentedBlocks = [
+      [currentBlock.getKey(), currentBlock],
+      [emptyBlockKey, emptyBlock],
+    ];
+
+    const focusKey = emptyBlockKey;
+    const newBlocks = blocksBefore.concat(augmentedBlocks, blocksAfter).toOrderedMap();
+    const newContentState = contentState.merge({
+      blockMap: newBlocks,
+      selectionBefore: selection,
+      selectionAfter: selection.merge({
+        anchorKey: focusKey,
+        anchorOffset: 0,
+        focusKey: focusKey,
+        focusOffset: 0,
+        isBackward: false
+      })
+    });
+
+    const noStyle = Immutable.OrderedSet([]);
+    const resetState = EditorState.push(editorState, newContentState, "split-block");
+    const noStyleState = EditorState.setInlineStyleOverride(resetState, noStyle);
+    this.props.onChange(noStyleState);
+  }
+
   handleReturn(event) {
+    if (this.props.softNewLines === false) {
+      return false;
+    }
+
     if (!event.shiftKey) {
+      const {editorState} = this.props;
+      const selection = editorState.getSelection();
+      const contentState = editorState.getCurrentContent();
+      const currentBlock = contentState.getBlockForKey(selection.getEndKey());
+      const endOffset = selection.getEndOffset();
+      const atEndOfBlock = (endOffset === currentBlock.getLength());
+      const resetStyleNewLine = this.props.resetStyleNewLine;
+      const noReset = this.blocksWithoutStyleReset.includes(currentBlock.type);
+
+      if (atEndOfBlock && resetStyleNewLine) {
+        const blockType = noReset ? currentBlock.type : "unstyled";
+        this.resetBlockStyle(
+          editorState,
+          selection,
+          contentState,
+          currentBlock,
+          blockType
+        );
+        return true;
+      }
       return false;
     }
 
     const {editorState} = this.props;
+
+    const currentContent = editorState.getCurrentContent();
+    const currentSelection = editorState.getSelection();
+    const contentBlock = currentContent.getBlockMap().get(currentSelection.getFocusKey());
+    const contentText = contentBlock.getText();
+
+    if (contentText.charAt(currentSelection.focusOffset -1) == "\n" ||
+        contentText.charAt(currentSelection.focusOffset) == "\n"){
+      return false;
+    }
+
     const newState = RichUtils.insertSoftNewline(editorState);
     this.props.onChange(newState);
     return true;
   }
 
+  focus() {
+    this.refs.draft.focus();
+  }
+
   setReadOnly(readOnly) {
     this.setState({readOnly});
+  }
+
+  handleBlockNotFound(block) {
+    if (this.props.handleBlockNotFound) {
+      return this.props.handleBlockNotFound(block);
+    }
+    return notFoundPlugin;
   }
 
   mediaBlockRenderer(block) {
@@ -127,22 +247,21 @@ export default class MegadraftEditor extends Component {
 
     const type = block.getData().toObject().type;
 
-    let typedPlugin = this.pluginsByType[type];
-
-    if (typedPlugin) {
-      return {
-        component: Media,
-        editable: false,
-        props: {
-          plugin: typedPlugin,
-          onChange: this.onChange,
-          editorState: this.props.editorState,
-          setReadOnly: this.setReadOnly
-        }
-      };
+    let plugin = this.pluginsByType[type] || this.handleBlockNotFound(block);
+    if (!plugin) {
+      return null;
     }
 
-    return null;
+    return {
+      component: Media,
+      editable: false,
+      props: {
+        plugin: plugin,
+        onChange: this.onChange,
+        editorState: this.props.editorState,
+        setReadOnly: this.setReadOnly
+      }
+    };
   }
 
   blockStyleFn(contentBlock) {
@@ -152,39 +271,55 @@ export default class MegadraftEditor extends Component {
     }
   }
 
-  render() {
-    const {editorState, stripPastedStyles, spellCheck} = this.props;
-    const plugins = this.plugins;
+  renderSidebar(props) {
+    const {sidebarRendererFn} = this.props;
+    if(typeof sidebarRendererFn === "function") {
+      return sidebarRendererFn(props);
+    }
+    return <Sidebar {...props} />;
+  }
 
+  renderToolbar(props) {
+    const {Toolbar = DefaultToolbar} = this.props;
+    return <Toolbar {...props} />;
+  }
+
+  render() {
     return (
       <div className="megadraft">
         <div
           className="megadraft-editor"
           id="megadraft-editor"
           ref="editor">
-          <Sidebar
-            plugins={plugins}
-            editorState={editorState}
-            onChange={this.onChange}/>
+          {this.renderSidebar({
+            plugins: this.plugins,
+            editorState: this.props.editorState,
+            readOnly: this.state.readOnly,
+            onChange: this.onChange,
+            maxSidebarButtons: this.props.maxSidebarButtons,
+            modalOptions: this.props.modalOptions,
+          })}
           <Editor
+            {...this.props}
+            ref="draft"
             readOnly={this.state.readOnly}
-            plugins={plugins}
+            plugins={this.plugins}
             blockRendererFn={this.mediaBlockRenderer}
             blockStyleFn={this.blockStyleFn}
             onTab={this.onTab}
             handleKeyCommand={this.handleKeyCommand}
             handleReturn={this.handleReturn}
-            stripPastedStyles={stripPastedStyles}
-            spellCheck={spellCheck}
             keyBindingFn={this.externalKeyBindings}
-            editorState={editorState}
-            placeholder={this.props.placeholder}
-            onChange={this.onChange} />
-          <Toolbar
-            editor={this.refs.editor}
-            editorState={editorState}
             onChange={this.onChange}
-            actions={this.actions}/>
+          />
+          {this.renderToolbar({
+            editor: this.refs.editor,
+            editorState: this.props.editorState,
+            readOnly: this.state.readOnly,
+            onChange: this.onChange,
+            actions: this.actions,
+            entityInputs: this.entityInputs
+          })}
         </div>
       </div>
     );

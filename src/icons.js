@@ -21,12 +21,17 @@ import MediaBigIcon from "./icons/mediaBig";
 import MediaMediumIcon from "./icons/mediaMedium";
 import MediaSmallIcon from "./icons/mediaSmall";
 import DropdownArrow from "./icons/dropdownArrow";
+import ErrorIcon from "./icons/error";
+import UnlinkIcon from "./icons/unlink";
+import CloseIcon from "./icons/close";
+import MoreIcon from "./icons/more";
 
 
 const icons = {
   BoldIcon, ItalicIcon, ULIcon, OLIcon, H2Icon, BlockQuoteIcon, LinkIcon,
   CrossIcon, ImageIcon, VideoIcon, EditIcon, DeleteIcon, CropIcon, MediaBigIcon,
-  MediaMediumIcon, MediaSmallIcon, DropdownArrow
+  MediaMediumIcon, MediaSmallIcon, DropdownArrow, ErrorIcon, UnlinkIcon,
+  CloseIcon, MoreIcon
 };
 
 export default icons;

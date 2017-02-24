@@ -2,30 +2,34 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>Megadraft - draftjs Rich Text Editor</title>
+    <title>Megadraft - Draft.JS Rich Text Editor</title>
+
+    <meta name="author" content="Globo.com">
+    <meta name="description" content="Megadraft is a Rich Text editor built on top of Facebook's Draft.JS featuring a nice default base of components and extensibility" />
+    <meta name="keywords" content="editor, rich text, JavaScript, react, draft.js" />
+    <meta name="robots" content="all" />
+
+    <meta property="og:url" content="https://globocom.github.io/megadraft" />
+    <meta property="og:title" content="Megadraft - Draft.JS Rich Text Editor" />
+    <meta property="og:description" content="Megadraft is a Rich Text editor built on top of Facebook's Draft.JS featuring a nice default base of components and extensibility" />
+    <meta property="og:image" content="https://globocom.github.io/megadraft/images/megadraft_logo_black_version_300x300.png" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="pt_BR" />
+    <link rel="icon" href="images/favicon.ico" type="image/x-icon">
 
     <link
       href="https://fonts.googleapis.com/css?family=Roboto:400,300,600"
       rel="stylesheet"
       type="text/css">
-
-    <link
-      href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
-
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/styles/github.min.css">
-
-    <link href="./app.css" rel="stylesheet">
-
-    <link
-      href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,700italic,400italic"
-      rel="stylesheet"
-      type="text/css">
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/styles/github.min.css">
+    <link href="styles/app.css" rel="stylesheet">
   </head>
   <body>
-    <a href="https://github.com/globocom/megadraft"><img style="z-index: 2000; position: absolute; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/52760788cde945287fbb584134c4cbc2bc36f904/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f77686974655f6666666666662e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png"></a>
     <div id="container"></div>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.4.0/highlight.min.js"></script>
+    <div class="page__wrapper">
+      <div id="react-container"></div>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.1.0/highlight.min.js"></script>
     <script src="./bundle.js"></script>
   </body>
 </html>

@@ -5,16 +5,16 @@
  */
 
 import React, {Component} from "react";
-import ReactDOM from "react-dom";
 import {EditorState, SelectionState, Entity} from "draft-js";
-import TestUtils from "react-addons-test-utils";
 import chai from "chai";
+import {mount} from "enzyme";
 
 import Toolbar from "../../src/components/Toolbar";
 import ToolbarItem from "../../src/components/ToolbarItem";
-import LinkInput from "../../src/components/LinkInput";
+
 import {editorStateFromRaw} from "../../src/utils";
 import Separator from "../../src/components/Separator";
+import LinkInput from "../../src/entity_inputs/LinkInput";
 
 let expect = chai.expect;
 
@@ -38,6 +38,8 @@ export default class ToolbarWrapper extends Component {
           editor={this.refs.editor}
           editorState={this.state.editorState}
           actions={this.props.actions}
+          readOnly={this.props.readOnly}
+          entityInputs={this.props.entityInputs}
           onChange={this.onChange} />
       </div>
     );
@@ -45,7 +47,7 @@ export default class ToolbarWrapper extends Component {
 }
 
 
-var draft = require("draft-js");
+const draft = require("draft-js");
 
 draft.getVisibleSelectionRect = () => {
   return {
@@ -59,13 +61,16 @@ draft.getVisibleSelectionRect = () => {
 function replaceSelection(newSelection, wrapper) {
   const selectionState = SelectionState.createEmpty("ag6qs");
   const updatedSelection = selectionState.merge(newSelection);
-  const oldState = wrapper.state.editorState;
+  const oldState = wrapper.state("editorState");
 
   const editorState = EditorState.forceSelection(oldState, updatedSelection);
 
   wrapper.setState({editorState: editorState});
 }
 
+
+const FileEntityInput = (props) => <LinkInput {...props} />;
+const LinkEntityInput = (props) => <LinkInput {...props} />;
 
 describe("Toolbar Component", function() {
   beforeEach(function() {
@@ -87,51 +92,62 @@ describe("Toolbar Component", function() {
       {type: "inline", label: "B", style: "BOLD", icon: "svg"},
       {type: "separator"},
       {type: "block", label: "H2", style: "header-two", icon: "svg"},
-      {type: "entity", label: "Link", style: "link", icon: "svg"}
+      {type: "entity", label: "Link", style: "link", entity: "LINK", icon: "svg"},
+      {type: "entity", label: "File", style: "link", entity: "FILE_LINK", icon: "svg"}
     ];
 
+    this.entityInputs = {
+      LINK: LinkEntityInput,
+      FILE_LINK: FileEntityInput
+    };
+
     this.editorState = editorStateFromRaw(INITIAL_CONTENT);
-    this.wrapper = TestUtils.renderIntoDocument(
-      <ToolbarWrapper editorState={this.editorState} actions={this.actions} />
+    this.wrapper = mount(
+      <ToolbarWrapper editorState={this.editorState} actions={this.actions} entityInputs={this.entityInputs}/>
     );
   });
 
   describe("Toolbar", function() {
-    afterEach(function() {
-      ReactDOM.unmountComponentAtNode(ReactDOM.findDOMNode(this.wrapper).parentNode);
-    });
-
     it("renders toolbar items from actions", function() {
-      const items = TestUtils.scryRenderedComponentsWithType(this.wrapper, ToolbarItem);
+      const items = this.wrapper.find(ToolbarItem);
       expect(items).to.have.length(this.actions.length);
     });
 
     it("renders separator", function() {
-      const items = TestUtils.scryRenderedComponentsWithType(this.wrapper, Separator);
+      const items = this.wrapper.find(Separator);
       expect(items).to.have.length(1);
+    });
+
+    it("renders as null when readOnly is set", function() {
+      const wrapper = mount(
+        <ToolbarWrapper readOnly editorState={this.editorState} actions={this.actions} />
+      );
+      const toolbar = wrapper.find(Toolbar);
+      expect(toolbar.html()).to.be.null;
     });
 
     describe("actions", function () {
       it("toggles inline style", function() {
-        const items = TestUtils.scryRenderedComponentsWithType(this.wrapper, ToolbarItem);
-        const boldItem = items[0];
-        const button = TestUtils.findRenderedDOMComponentWithTag(boldItem, "button");
+        const items = this.wrapper.find(ToolbarItem);
+        const boldItem = items.at(0);
+        const button = boldItem.find("button");
 
-        TestUtils.Simulate.click(button);
+        button.simulate("click");
 
-        const current = this.wrapper.state.editorState.getCurrentInlineStyle();
+        const current = this.wrapper.state("editorState").getCurrentInlineStyle();
         expect(current.has("BOLD")).to.be.true;
       });
 
       it("toggles block style", function() {
-        const items = TestUtils.scryRenderedComponentsWithType(this.wrapper, ToolbarItem);
-        const titleItem = items[2];
-        const button = TestUtils.findRenderedDOMComponentWithTag(titleItem, "button");
+        const items = this.wrapper.find(ToolbarItem);
+        const titleItem = items.at(2);
+        const button = titleItem.find("button");
 
-        TestUtils.Simulate.click(button);
+        button.simulate("click");
 
-        const selection = this.wrapper.state.editorState.getSelection();
-        const current = this.wrapper.state.editorState
+        const editorState = this.wrapper.state("editorState");
+        const selection = editorState.getSelection();
+        const current = editorState
           .getCurrentContent()
           .getBlockForKey(selection.getStartKey())
           .getType();
@@ -141,8 +157,8 @@ describe("Toolbar Component", function() {
     });
 
     it("starts hidden", function() {
-      const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
-      expect(toolbarNode.classList.contains("toolbar--open")).to.be.false;
+      const toolbarWrapper = this.wrapper.find(".toolbar");
+      expect(toolbarWrapper.hasClass("toolbar--open")).to.be.false;
     });
 
     it("shows after selection", function() {
@@ -151,8 +167,8 @@ describe("Toolbar Component", function() {
         anchorOffset: 5
       }, this.wrapper);
 
-      const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
-      expect(toolbarNode.classList.contains("toolbar--open")).to.be.true;
+      const toolbarWrapper = this.wrapper.find(".toolbar");
+      expect(toolbarWrapper.hasClass("toolbar--open")).to.be.true;
     });
 
     it("should hide after deselection", function() {
@@ -166,59 +182,60 @@ describe("Toolbar Component", function() {
         anchorOffset: 0
       }, this.wrapper);
 
-      const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
-      expect(toolbarNode.classList.contains("toolbar--open")).to.be.false;
+      const toolbarWrapper = this.wrapper.find(".toolbar");
+      expect(toolbarWrapper.hasClass("toolbar--open")).to.be.false;
     });
 
     it("should center toolbar above the selection", function() {
       replaceSelection({focusOffset: 0, anchorOffset: 5}, this.wrapper);
 
-      const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
+      const toolbarWrapper = this.wrapper.find(".toolbar");
+      const toolbarWrapperNode = toolbarWrapper.get(0);
 
-      expect(toolbarNode.style.top).to.be.equal("-14px");
-      expect(toolbarNode.style.left).to.be.equal("0.5px");
+      expect(toolbarWrapperNode.style.bottom).to.be.equal("14px");
+      expect(toolbarWrapperNode.style.left).to.be.equal("0.5px");
     });
 
-    describe("Link", function() {
+    describe("entity inputs", function() {
       beforeEach(function() {
+        this.linkButton = () => this.wrapper.find(ToolbarItem).at(3).find("button");
+        this.fileButton = () => this.wrapper.find(ToolbarItem).at(4).find("button");
+        // select
         replaceSelection({
           anchorOffset: 0,
           focusOffset: 5
         }, this.wrapper);
-        const items = TestUtils.scryRenderedComponentsWithType(this.wrapper, ToolbarItem);
-        const titleItem = items[3]; // Link
-        this.button = TestUtils.findRenderedDOMComponentWithTag(titleItem, "button");
       });
 
-      it("starts with the link input hidden", function() {
-        const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
-
-        expect(toolbarNode.classList.contains("toolbar--editing-link")).to.be.false;
+      it("starts with showing no entity input", function() {
+        const toolbarWrapper = this.wrapper.find(".toolbar");
+        expect(toolbarWrapper.find(LinkEntityInput)).to.have.length(0);
+        expect(toolbarWrapper.find(FileEntityInput)).to.have.length(0);
       });
 
-      it("shows the link input on click", function() {
-
-        TestUtils.Simulate.click(this.button);
-
-        const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
-
-        expect(toolbarNode.classList.contains("toolbar--editing-link")).to.be.true;
-
+      it("shows the first entity input on click on the corresponding button", function() {
+        this.linkButton().simulate("click");
+        const toolbarWrapper = this.wrapper.find(".toolbar");
+        expect(toolbarWrapper.find(LinkEntityInput)).to.have.length(1);
+        expect(toolbarWrapper.find(FileEntityInput)).to.have.length(0);
       });
 
-      it("should add a link to the selection", function() {
+      it("shows second entity input on click on the corresponding button", function() {
+        this.fileButton().simulate("click");
+        const toolbarWrapper = this.wrapper.find(".toolbar");
+        expect(toolbarWrapper.find(LinkEntityInput)).to.have.length(0);
+        expect(toolbarWrapper.find(FileEntityInput)).to.have.length(1);
+      });
 
-        TestUtils.Simulate.click(this.button);
+      it("(integration) LinkInput sets a entity on the current selection ", function() {
+        this.linkButton().simulate("click");
+        const input = this.wrapper.find(LinkEntityInput).find("input");
+        const inputNode = input.get(0);
+        inputNode.value = "http://www.globo.com";
+        input.simulate("change");
+        input.simulate("keyDown", {key: "Enter", keyCode: 13, which: 13});
 
-        const linkInput = TestUtils.findRenderedComponentWithType(this.wrapper, LinkInput);
-        const textInput = linkInput.refs.textInput;
-
-        textInput.value = "http://www.globo.com";
-        TestUtils.Simulate.change(textInput);
-        TestUtils.Simulate.keyDown(textInput, {key: "Enter", keyCode: 13, which: 13});
-
-        const contentState = this.wrapper.state.editorState.getCurrentContent();
-
+        const contentState = this.wrapper.state("editorState").getCurrentContent();
         const blockWithLinkAtBeginning = contentState.getBlockForKey("ag6qs");
         const linkKey = blockWithLinkAtBeginning.getEntityAt(0);
         const linkInstance = Entity.get(linkKey);
@@ -227,72 +244,42 @@ describe("Toolbar Component", function() {
         expect(url).to.be.equal("http://www.globo.com");
       });
 
-      it("esc key should cancel the link", function() {
-        TestUtils.Simulate.click(this.button);
+      it("(integration) LinkInput should remove an entity when ", function() {
+        this.linkButton().simulate("click");
 
-        const linkInput = TestUtils.findRenderedComponentWithType(this.wrapper, LinkInput);
-        const textInput = linkInput.refs.textInput;
+        const input = this.wrapper.find(LinkEntityInput).find("input");
+        const inputNode = input.get(0);
 
-        textInput.value = "http://www.globo.com";
+        inputNode.value = "http://www.globo.com";
+        input.simulate("change");
+        input.simulate("keyDown", {key: "Enter", keyCode: 13, which: 13});
+        // show dialog again
+        this.linkButton().simulate("click");
+        // click on remove
+        const removeButton = this.wrapper.find(LinkEntityInput).find("button");
+        removeButton.simulate("click");
 
-        TestUtils.Simulate.change(textInput);
-        TestUtils.Simulate.keyDown(textInput, {key: "Escape", keyCode: 27, which: 27});
-
-        const toolbarNode = this.wrapper.refs.toolbar.refs.toolbarWrapper;
-
-        expect(toolbarNode.classList.contains("toolbar--editing-link")).to.be.false;
-
-      });
-
-      it("should remove a link", function() {
-
-        TestUtils.Simulate.click(this.button);
-
-        const linkInput = TestUtils.findRenderedComponentWithType(this.wrapper, LinkInput);
-        const textInput = linkInput.refs.textInput;
-
-        textInput.value = "http://www.globo.com";
-        TestUtils.Simulate.change(textInput);
-        TestUtils.Simulate.keyDown(textInput, {key: "Enter", keyCode: 13, which: 13});
-
-        TestUtils.Simulate.click(this.button);
-        const contentState = this.wrapper.state.editorState.getCurrentContent();
-
+        const contentState = this.wrapper.state("editorState").getCurrentContent();
         const blockWithLinkAtBeginning = contentState.getBlockForKey("ag6qs");
         const linkKey = blockWithLinkAtBeginning.getEntityAt(0);
 
         expect(linkKey).to.be.null;
       });
 
-      it("should add protocol to links", function() {
-        TestUtils.Simulate.click(this.button);
+      it("(integration) LinkInput should remove a link backwards", function() {
+        this.linkButton().simulate("click");
 
-        const linkInput = TestUtils.findRenderedComponentWithType(this.wrapper, LinkInput);
-        const textInput = linkInput.refs.textInput;
-        textInput.value = "www.globo.com";
-        TestUtils.Simulate.change(textInput);
-        TestUtils.Simulate.keyDown(textInput, {key: "Enter", keyCode: 13, which: 13});
+        const input = this.wrapper.find(LinkEntityInput).find("input");
+        const inputNode = input.get(0);
 
-        const contentState = this.wrapper.state.editorState.getCurrentContent();
-
-        const blockWithLinkAtBeginning = contentState.getBlockForKey("ag6qs");
-        const linkKey = blockWithLinkAtBeginning.getEntityAt(0);
-        const linkInstance = Entity.get(linkKey);
-        const {url} = linkInstance.getData();
-
-        expect(url).to.be.equal("http://www.globo.com");
-      });
-
-      it("should remove a link backwards", function() {
-
-        TestUtils.Simulate.click(this.button);
-
-        const linkInput = TestUtils.findRenderedComponentWithType(this.wrapper, LinkInput);
-        const textInput = linkInput.refs.textInput;
-
-        textInput.value = "http://www.globo.com";
-        TestUtils.Simulate.change(textInput);
-        TestUtils.Simulate.keyDown(textInput, {key: "Enter", keyCode: 13, which: 13});
+        inputNode.value = "www.globo.com";
+        input.simulate("change");
+        input.simulate("keyDown", {key: "Enter", keyCode: 13, which: 13});
+        // show dialog again
+        this.linkButton().simulate("click");
+        // click on remove
+        const removeButton = this.wrapper.find(LinkEntityInput).find("button");
+        removeButton.simulate("click");
 
         replaceSelection({
           anchorOffset: 5,
@@ -300,8 +287,8 @@ describe("Toolbar Component", function() {
           isBackward: true
         }, this.wrapper);
 
-        TestUtils.Simulate.click(this.button);
-        const contentState = this.wrapper.state.editorState.getCurrentContent();
+        this.linkButton().simulate("click");
+        const contentState = this.wrapper.state("editorState").getCurrentContent();
 
         const blockWithLinkAtBeginning = contentState.getBlockForKey("ag6qs");
         const linkKey = blockWithLinkAtBeginning.getEntityAt(0);

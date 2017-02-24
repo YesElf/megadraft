@@ -5,11 +5,10 @@
  */
 
 import React from "react";
-import ReactDOM from "react-dom";
-import TestUtils from "react-addons-test-utils";
 import chai from "chai";
 import sinon from "sinon";
 import sinonChai from "sinon-chai";
+import {mount} from "enzyme";
 
 import Media from "../../src/components/Media";
 import {editorStateFromRaw} from "../../src/utils";
@@ -55,21 +54,16 @@ describe("Media Component", function() {
     const currentContent = this.blockProps.editorState.getCurrentContent();
     this.block = currentContent.getBlockForKey("9vgd");
 
-    this.component = TestUtils.renderIntoDocument(
+    this.wrapper = mount(
       <Media
         blockProps={this.blockProps}
         block={this.block} />
     );
-  });
-
-  afterEach(function() {
-    ReactDOM.unmountComponentAtNode(
-      ReactDOM.findDOMNode(this.component).parentNode
-    );
+    this.component = this.wrapper.get(0);
   });
 
   it("renders without problems", function() {
-    expect(this.component).to.exist;
+    expect(this.wrapper.length).to.equal(1);
   });
 
   it("updates data", function() {
@@ -98,6 +92,6 @@ describe("Media Component", function() {
     const currentContent = editorState.getCurrentContent();
     const block = currentContent.getBlockForKey("9vgd");
 
-    expect(block.type).to.equal("unstyled");
+    expect(block).to.be.undefined;
   });
 });
