@@ -109,7 +109,7 @@ export class ToggleButton extends Component {
     });
 
     return (
-      <button title={this.propstitles.addAttachment} type="button" className={className} onClick={this.props.toggle}>
+      <button title={this.props.titles.addAttachment} type="button" className={className} onClick={this.props.toggle}>
         <Icon className="sidemenu__button__icon" />
       </button>
     );
