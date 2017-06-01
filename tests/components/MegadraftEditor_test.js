@@ -178,7 +178,7 @@ describe("MegadraftEditor Component", () => {
   });
 
   it("passes extra props to the draft-js editor", function() {
-    const handlePastedText = (text) => { console.log(text); };
+    const handlePastedText = (text) => { return text; };
     const wrapper = mount(
       <MegadraftEditor
         editorState={this.editorState}
@@ -189,8 +189,8 @@ describe("MegadraftEditor Component", () => {
     expect(wrapper.ref("draft").props().handlePastedText).to.equal(handlePastedText);
   });
 
-  it("cant overridde megadraft props via extra props", function() {
-    const blockRendererFn = (text) => { console.log(text); };
+  it("can't override megadraft props via extra props", function() {
+    const blockRendererFn = (text) => { return text; };
     const wrapper = mount(
       <MegadraftEditor
         editorState={this.editorState}
@@ -199,6 +199,18 @@ describe("MegadraftEditor Component", () => {
       />
     );
     expect(wrapper.ref("draft").props().blockRendererFn).to.not.equal(blockRendererFn);
+  });
+
+  it("allows blockStyleFn to be overridden", function() {
+    const blockStyleFn = (text) => { return text; };
+    const wrapper = mount(
+      <MegadraftEditor
+        editorState={this.editorState}
+        onChange={this.onChange}
+        blockStyleFn={blockStyleFn}
+      />
+    );
+    expect(wrapper.ref("draft").props().blockStyleFn).to.equal(blockStyleFn);
   });
 
   it("reset blockStyle in new block if resetStyle is true", function() {
@@ -304,7 +316,10 @@ describe("MegadraftEditor Component", () => {
           "plugin": image,
           "onChange": this.component.onChange,
           "editorState": this.editorState,
-          "setReadOnly": this.component.setReadOnly
+          "setReadOnly": this.component.setReadOnly,
+          "getReadOnly": this.component.getReadOnly,
+          "setInitialReadOnly": this.component.setInitialReadOnly,
+          "getInitialReadOnly": this.component.getInitialReadOnly,
         }
       });
     });
@@ -320,7 +335,10 @@ describe("MegadraftEditor Component", () => {
           "plugin": NotFoundPlugin,
           "onChange": this.component.onChange,
           "editorState": this.editorState,
-          "setReadOnly": this.component.setReadOnly
+          "setReadOnly": this.component.setReadOnly,
+          "getReadOnly": this.component.getReadOnly,
+          "setInitialReadOnly": this.component.setInitialReadOnly,
+          "getInitialReadOnly": this.component.getInitialReadOnly,
         }
       });
     });
@@ -341,7 +359,10 @@ describe("MegadraftEditor Component", () => {
           "plugin": customFallbackPlugin,
           "onChange": this.component.onChange,
           "editorState": this.editorState,
-          "setReadOnly": this.component.setReadOnly
+          "setReadOnly": this.component.setReadOnly,
+          "getReadOnly": this.component.getReadOnly,
+          "setInitialReadOnly": this.component.setInitialReadOnly,
+          "getInitialReadOnly": this.component.getInitialReadOnly,
         }
       });
     });
@@ -483,6 +504,8 @@ describe("MegadraftEditor Component", () => {
   });
 
   it("renders only valid plugins", function() {
+    console.warn = sinon.spy();
+
     const invalidPlugin = {
       buttonComponent: {},
       blockComponent: {}
@@ -587,7 +610,7 @@ describe("MegadraftEditor Component", () => {
     const toolbar = this.wrapper.find(Toolbar);
     // editor is undefined :-/
     //expect(toolbar.prop("editor")).to.equal(this.component.refs.editor);
-    expect(toolbar.prop("actions")).to.equal(this.component.actions);
+    expect(toolbar.prop("actions")).to.equal(this.component.props.actions);
     expect(toolbar.prop("entityInputs")).to.equal(this.component.entityInputs);
     expect(toolbar.prop("onChange")).to.equal(this.component.onChange);
     expect(toolbar.prop("editorState")).to.equal(this.editorState);
@@ -613,7 +636,7 @@ describe("MegadraftEditor Component", () => {
     );
     const toolbar = wrapper.find(MyCustomToolbar);
     expect(toolbar).to.have.length(1);
-    expect(toolbar.prop("actions")).to.equal(this.component.actions);
+    expect(toolbar.prop("actions")).to.equal(this.component.props.actions);
     expect(toolbar.prop("entityInputs")).to.equal(this.component.entityInputs);
     expect(toolbar.prop("editorState")).to.equal(this.editorState);
     expect(toolbar.prop("readOnly")).to.equal(false);

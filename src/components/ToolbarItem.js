@@ -46,3 +46,9 @@ export default class ToolbarItem extends Component {
     );
   }
 }
+
+ToolbarItem.propTypes = {
+  item: {
+    title: ""
+  }
+}

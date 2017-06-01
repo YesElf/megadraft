@@ -5,13 +5,19 @@
  */
 
 import React, {Component} from "react";
-import {EditorState, RichUtils, Entity} from "draft-js";
+import {EditorState, RichUtils} from "draft-js";
 import classNames from "classnames";
 import ToolbarItem from "./ToolbarItem";
 import {getSelectionCoords} from "../utils";
 
 
 export default class Toolbar extends Component {
+  static defaultProps = {
+    shouldDisplayToolbarFn() {
+      return !this.editorState.getSelection().isCollapsed();
+    },
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -49,6 +55,11 @@ export default class Toolbar extends Component {
     let key = item.label;
 
     switch(item.type) {
+      case "custom": {
+        key = "custom-" + position;
+        toggle = () => item.action(this.props.editorState);
+        break;
+      }
       case "inline": {
         current = this.props.editorState.getCurrentInlineStyle();
         toggle = () => this.toggleInlineStyle(item.style);
@@ -94,6 +105,7 @@ export default class Toolbar extends Component {
   setBarPosition() {
     const editor = this.props.editor;
     const toolbar = this.refs.toolbar;
+    const arrow = this.refs.arrow;
     const selectionCoords = getSelectionCoords(editor, toolbar);
 
     if (!selectionCoords) {
@@ -111,12 +123,30 @@ export default class Toolbar extends Component {
           bottom: selectionCoords.offsetBottom,
           left: selectionCoords.offsetLeft
         }
+      }, state => {
+        const minOffsetLeft = 5;
+        const minOffsetRight = 5;
+        const toolbarDimensions = toolbar.getBoundingClientRect();
+
+        if (toolbarDimensions.left < minOffsetLeft) {
+          toolbar.style.left = -((toolbarDimensions.width / 2) + toolbarDimensions.left - minOffsetLeft) + "px";
+          arrow.style.left = ((toolbarDimensions.width / 2) + toolbarDimensions.left - minOffsetLeft) + "px";
+        }
+        if (toolbarDimensions.left + toolbarDimensions.width > window.innerWidth - minOffsetRight) {
+          toolbar.style.left = -(toolbarDimensions.right - selectionCoords.offsetLeft + minOffsetRight) + "px";
+          arrow.style.left = (toolbarDimensions.right - selectionCoords.offsetLeft + minOffsetRight) + "px";
+        }
       });
     }
   }
 
   componentDidUpdate() {
-    if (!this.props.editorState.getSelection().isCollapsed()) {
+    // reset toolbar position every time
+    if (this.refs.toolbar && this.refs.arrow) {
+      this.refs.toolbar.style.left = "";
+      this.refs.arrow.style.left = "";
+    }
+    if (this.props.shouldDisplayToolbarFn()) {
       return this.setBarPosition();
     } else {
       if (this.state.show) {
@@ -141,9 +171,10 @@ export default class Toolbar extends Component {
   }
 
   getCurrentEntity() {
+    const contentState = this.props.editorState.getCurrentContent();
     const entityKey = this.getCurrentEntityKey();
     if(entityKey) {
-      return Entity.get(entityKey);
+      return contentState.getEntity(entityKey);
     }
     return null;
   }
@@ -158,7 +189,9 @@ export default class Toolbar extends Component {
 
   setEntity(entityType, data, mutability = "MUTABLE") {
     const {editorState} = this.props;
-    const entityKey = Entity.create(entityType, mutability, data);
+    const contentState = editorState.getCurrentContent();
+    const contentStateWithEntity = contentState.createEntity(entityType, mutability, data);
+    const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
     const newState = RichUtils.toggleLink(
       editorState,
       editorState.getSelection(),
@@ -234,6 +267,7 @@ export default class Toolbar extends Component {
     if(this.props.readOnly) {
       return null;
     }
+
     const toolbarClass = classNames("toolbar", {
       "toolbar--open": this.state.show,
       "toolbar--error": this.state.error
@@ -251,7 +285,7 @@ export default class Toolbar extends Component {
               this.renderToolList()
             }
             <p className="toolbar__error-msg">{this.state.error}</p>
-            <span className="toolbar__arrow" />
+            <span className="toolbar__arrow" ref="arrow"/>
           </div>
         </div>
       </div>
