@@ -28,6 +28,8 @@ Here are the props that `MegadraftEditor` accepts:
   and when clicked it will open a modal window with the full button list.
 - `modalOptions`: (optional) object, height and width of the modal.
   Check the following sections for more info.
+- `shouldDisplayToolbarFn`: (optional) Boolean-valued function fired when
+  editor state changes. It allows to control whether or not the Toolbar should be shown.
 
 Check the following sections for more info.
 
@@ -108,14 +110,14 @@ class App extends React.Component {
   }
 
   render() {
-    const custom_actions = actions.concat([
+    const customActions = actions.concat([
       {type: "inline", label: "U", style: "UNDERLINE", icon: UnderlineIcon}
     ]);
     return (
       <MegadraftEditor
         editorState={this.state.editorState}
         onChange={this.onChange}
-        actions={custom_actions}/>
+        actions={customActions}/>
     )
   }
 }
@@ -132,6 +134,20 @@ ReactDOM.render(
   <App />,
   document.getElementById("container")
 );
+```
+
+You can also provide a fully custom action:
+
+```js
+const customActions = [
+  {
+    type: "custom",
+    icon: OwnIcon,
+    action() {
+      // Here goes the code triggered on button click
+    },
+  },
+];
 ```
 
 
