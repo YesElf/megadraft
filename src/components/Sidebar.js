@@ -109,7 +109,7 @@ export class ToggleButton extends Component {
     });
 
     return (
-      <button type="button" className={className} onClick={this.props.toggle}>
+      <button title={this.propstitles.addAttachment} type="button" className={className} onClick={this.props.toggle}>
         <Icon className="sidemenu__button__icon" />
       </button>
     );
@@ -143,6 +143,7 @@ export class SideMenu extends Component {
     return (
       <li className={className}>
         <ToggleButton
+          titles={this.props.titles}
           toggle={this.toggle}
           open={this.state.open} />
 
@@ -239,6 +240,7 @@ export default class SideBar extends Component {
             <SideMenu
               editorState={this.props.editorState}
               onChange={this.onChange}
+              titles={this.props.titles}
               plugins={this.getValidSidebarPlugins()}
               maxSidebarButtons={this.props.maxSidebarButtons}
               modalOptions={this.props.modalOptions} />
