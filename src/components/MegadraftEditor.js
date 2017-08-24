@@ -322,6 +322,7 @@ export default class MegadraftEditor extends Component {
             onChange: this.onChange,
             maxSidebarButtons: this.props.maxSidebarButtons,
             modalOptions: this.props.modalOptions,
+            titles: this.props.titles
           })}
           <Editor
             {...this.props}
