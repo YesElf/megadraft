@@ -192,7 +192,7 @@ export default class MegadraftEditor extends Component {
       return false;
     }
 
-    if (!event.shiftKey) {
+    if (event.shiftKey) {
       const {editorState} = this.props;
       const selection = editorState.getSelection();
       const contentState = editorState.getCurrentContent();
